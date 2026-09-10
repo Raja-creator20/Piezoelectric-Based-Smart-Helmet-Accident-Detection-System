@@ -1,0 +1,65 @@
+ Hardware Components
+
+## Bill of Materials
+
+| # | Component | Purpose |
+|---|-----------|---------|
+| 1 | Arduino Uno R3 (ATmega328P) | Central processing unit |
+| 2 | Piezoelectric Sensor (35mm PZT disc) | Impact/collision detection |
+| 3 | MPU6050 (Accelerometer + Gyroscope) | Motion/orientation sensing, sensor fusion |
+| 4 | NEO-6M GPS Module | Location acquisition |
+| 5 | SIM800L GSM Module | Emergency SMS transmission |
+| 6 | Force-Sensitive Resistor (FSR) | Helmet-wear detection |
+| 7 | Push Button | Cancel/confirm accident alert |
+| 8 | Buzzer | Audible alerts / countdown warning |
+| 9 | 2x 18650 Li-ion Cells | Power source (7.4V nominal, in series) |
+| 10 | TP4056 Charging Module | Battery charging + protection |
+| 11 | 7805 Linear Voltage Regulator | Regulates 7.4V → 5V (Arduino, sensors, GPS) |
+| 12 | LM2596 Buck Converter | Regulates 7.4V → 4.0V (GSM module) |
+
+## Key Specifications
+
+**Arduino Uno R3** — ATmega328P, 5V logic, 14 digital I/O (6 PWM), 6 analog in, 16MHz clock, 32KB flash.
+
+**Piezoelectric Sensor** — PZT ceramic, 35mm diameter, 0.5mm thick, 15nF capacitance, charge coefficient 280 pC/N, output 0–5V (with conditioning circuit).
+
+**MPU6050** — 6-axis (3-axis accel + 3-axis gyro), I2C @ 400kHz, 16-bit ADC, 3.3V onboard regulator.
+
+**NEO-6M GPS** — u-blox 6 engine, 2.5m horizontal accuracy, up to 5Hz update rate, UART @ 9600 baud, ~27s cold-start acquisition.
+
+**SIM800L GSM** — Quad-band 850/900/1800/1900 MHz, UART, 3.4–4.4V (recommended 4.0V), up to 350mA peak transmit current.
+
+**FSR** — 12.7mm active area, 0.1N–100N sensitivity range, used with 10kΩ pull-up voltage divider.
+
+## Wiring / Pin Connections
+
+| Module | Signal | Arduino Pin | Interface Type |
+|--------|--------|-------------|-----------------|
+| Piezo Sensor | Analog Output | A2 | Analog Input |
+| Limit Switch (helmet-worn) | Digital | A1 / D2 | Digital Input |
+| Push Button (cancel) | Digital | A3 | Digital Input (pull-up) |
+| Voice/Mic Module | Analog + Digital | A1 (analog) / D4 (digital) | Analog + Digital Input |
+| Buzzer | Alert Output | D5 | Digital Output |
+| NEO-6M GPS | RX/TX | D3/D4 (SoftwareSerial) | SoftwareSerial |
+| SIM800L GSM | RX/TX | D8/D9 (SoftwareSerial) | SoftwareSerial |
+| MPU6050 | SDA/SCL | A4/A5 | I2C |
+
+> Note: pin numbers above reflect the actual firmware (`firmware/smart_helmet.ino`); a couple of pin
+> assignments differ slightly from early design tables in the thesis (e.g. GPS/GSM pins were
+> reassigned during implementation) — the `.ino` file is the source of truth for wiring.
+
+## Power Supply Circuit
+
+- 2x 18650 Li-ion cells in series → 7.4V nominal
+- TP4056 module manages charging from 5V micro-USB input, with battery protection
+- 7805 linear regulator: 7.4V → 5V for Arduino, sensors, GPS
+- LM2596 buck converter: 7.4V → 4.0V for GSM module (needs stable voltage in its narrow operating range)
+
+## Detection Thresholds (from calibration testing)
+
+- Piezoelectric force threshold: ~15N (also see `VIB_THRESHOLD` in firmware)
+- Acceleration magnitude threshold: ~3g
+- Verified force detection range in testing: 4.9N – 64.8N
+- Detection accuracy achieved: 95%
+
+Full derivation and testing tables are in `docs/thesis.pdf` (Chapters 4–6).
